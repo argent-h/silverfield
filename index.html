@@ -52,6 +52,7 @@
             display: flex;
             gap: 24px;
             font-size: 15px;
+            align-items: center;
         }
 
         nav a:hover {
@@ -203,6 +204,11 @@
             border-left: 2px solid #999999;
             font-size: 13px;
         }
+
+        /* 관리자 기능 숨김/표시 처리 */
+        .admin-only {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -214,6 +220,7 @@
             <a href="#" onclick="showPage('writings')">글</a>
             <a href="#" onclick="showPage('intro')">소개</a>
             <a href="#" onclick="showPage('books')">책</a>
+            <a href="#" onclick="netlifyIdentity.open()">관리자</a>
         </nav>
     </header>
 
@@ -224,11 +231,11 @@
 
     <section id="writings" class="page">
         <h2>글 목록</h2>
-        <div style="margin: 20px 0;">
+        <div class="admin-only inline-display" style="margin: 20px 0;">
             <button onclick="openPostForm()">글쓰기</button>
         </div>
 
-        <div id="postFormSection" style="display: none; margin-bottom: 30px; padding: 20px; border: 1px solid #cccccc;">
+        <div id="postFormSection" class="admin-only" style="display: none; margin-bottom: 30px; padding: 20px; border: 1px solid #cccccc;">
             <h3 id="formTitleText" style="margin-bottom: 15px;">글 작성</h3>
             <input type="hidden" id="editIndex">
             <div class="form-group">
@@ -255,7 +262,8 @@
             <p id="detailDate" class="post-date" style="margin-bottom: 20px;"></p>
             <div id="detailImageWrapper" style="margin-bottom: 20px;"></div>
             <div id="detailContent" class="indent-p" style="font-size: 15px;"></div>
-            <div style="margin-top: 40px; display: flex; gap: 8px;">
+            
+            <div id="detailButtons" class="admin-only flex-display" style="display: none; margin-top: 40px; gap: 8px;">
                 <button onclick="editPost()">수정</button>
                 <button onclick="deletePost()">삭제</button>
             </div>
@@ -274,11 +282,11 @@
                 </div>
         </div>
         
-        <div style="margin-top: 30px;">
+        <div class="admin-only inline-display" style="margin-top: 30px;">
             <button onclick="openIntroForm()">소개글 수정</button>
         </div>
 
-        <div id="introFormSection" style="display: none; margin-top: 20px; padding: 20px; border: 1px solid #cccccc;">
+        <div id="introFormSection" class="admin-only" style="display: none; margin-top: 20px; padding: 20px; border: 1px solid #cccccc;">
             <h3 style="margin-bottom: 15px;">소개글 수정</h3>
             <div class="form-group">
                 <label>소개 텍스트</label>
@@ -302,11 +310,11 @@
     <section id="books" class="page">
         <h2>쓰거나 참여한 책</h2>
         
-        <div style="margin: 20px 0;">
+        <div class="admin-only inline-display" style="margin: 20px 0;">
             <button onclick="openBookForm()">책 추가</button>
         </div>
 
-        <div id="bookFormSection" style="display: none; margin-bottom: 30px; padding: 20px; border: 1px solid #cccccc;">
+        <div id="bookFormSection" class="admin-only" style="display: none; margin-bottom: 30px; padding: 20px; border: 1px solid #cccccc;">
             <h3 id="formTitleTextBook" style="margin-bottom: 15px;">책 추가</h3>
             <input type="hidden" id="editBookIndex">
             <div class="form-group">
@@ -338,7 +346,7 @@
             { title: "세 번째 글", content: "이 공간을 통해 여러분과 조용한 사색을 나누고 싶습니다.\n\n시와 산문이 여러분의 쉼터가 되길 바랍니다.", date: "2026-04-10T11:00:00Z", image: "" }
         ];
 
-        // 초기 책 데이터 (생성일 기준 정렬을 위해 date 추가)
+        // 초기 책 데이터
         let books = JSON.parse(localStorage.getItem('silver_books')) || [
             { title: "첫 번째 시집 (2025)", desc: "여백 사이로 불어오는 바람을 기록한 시집입니다. 일상 속 잊고 지내던 사색의 시간을 담았습니다.", fullDesc: "은빛 들판에 맺힌 이슬처럼, 투명하고 잔잔한 감정들을 모은 첫 시집입니다. 앤솔러지 참여작 등 다양한 형태의 시 20편이 수록되어 있습니다.", date: "2025-12-01T12:00:00Z" },
             { title: "두 번째 산문집 (2026)", desc: "도시의 소음 속에서 발견한 고요함에 대한 단상입니다. 마음의 쉼표가 되는 짧은 글들을 엮었습니다.", fullDesc: "바쁜 현대인들에게 작은 위로를 건네는 산문집입니다. 50여 편의 산문이 실려 있으며, 흑백 사진이 함께 어우러져 있습니다.", date: "2026-03-01T14:30:00Z" }
@@ -370,6 +378,11 @@
             if (pageId === 'intro') {
                 renderIntro();
             }
+            
+            // 페이지 전환 시 로그인 상태에 따라 요소 표시
+            if (window.netlifyIdentity) {
+                applyAdminVisibility(window.netlifyIdentity.currentUser());
+            }
         }
 
         // 최신순 정렬 (홈 화면 최신 3개)
@@ -377,7 +390,6 @@
             const container = document.getElementById('homePosts');
             container.innerHTML = '';
             
-            // 생성일 기준 최신순 정렬
             posts.sort((a, b) => new Date(b.date) - new Date(a.date));
             const latestPosts = posts.slice(0, 3);
             
@@ -402,7 +414,6 @@
             const container = document.getElementById('postListContainer');
             container.innerHTML = '';
             
-            // 생성일 기준 최신순 정렬
             posts.sort((a, b) => new Date(b.date) - new Date(a.date));
             
             posts.forEach(post => {
@@ -458,7 +469,6 @@
                 posts[editIndex].content = content;
                 posts[editIndex].image = image;
             } else {
-                // 정확한 생성일시(시간 포함)를 저장합니다.
                 const now = new Date().toISOString();
                 posts.push({
                     title: title,
@@ -477,7 +487,7 @@
         }
 
         function openDetailView(index) {
-            showPage('writings'); // 글을 클릭하면 자동으로 '글' 페이지로 이동
+            showPage('writings');
             currentViewPostIndex = index;
             document.getElementById('detailView').style.display = 'block';
             document.getElementById('postListContainer').style.display = 'none';
@@ -494,11 +504,14 @@
                 document.getElementById('detailImageWrapper').innerHTML = '';
             }
 
-            // 글 내용의 줄바꿈을 문단 및 공백으로 처리
             document.getElementById('detailContent').innerHTML = formatPostContent(post.content);
+
+            // 세부 보기 화면에서도 로그인 여부에 따라 버튼 표시
+            if (window.netlifyIdentity) {
+                applyAdminVisibility(window.netlifyIdentity.currentUser());
+            }
         }
 
-        // 줄바꿈 처리 함수 (줄바꿈 두 번 이상 시 공백 생성)
         function formatPostContent(content) {
             const lines = (content || "").replace(/\r\n/g, '\n').split('\n');
             let html = '';
@@ -543,11 +556,9 @@
             const container = document.getElementById('bookListContainer');
             container.innerHTML = '';
             
-            // 생성일 기준 내림차순(최신순) 정렬된 새 배열을 생성하여 렌더링
             const sortedBooks = [...books].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
             
             sortedBooks.forEach((book) => {
-                // 원본 배열에서의 실제 인덱스 찾기
                 const originalIndex = books.indexOf(book);
                 const displayDate = book.date ? (book.date.includes('T') ? book.date.split('T')[0] : book.date) : '';
                 
@@ -559,13 +570,17 @@
                     <p class="book-desc">${book.desc}</p>
                     <button onclick="toggleBookDesc(this)">소개글 더 보기</button>
                     <div class="full-desc">${book.fullDesc}</div>
-                    <div style="margin-top: 15px; display: flex; gap: 8px;">
+                    <div class="admin-only flex-display" style="margin-top: 15px; gap: 8px; display: none;">
                         <button onclick="openBookForm(${originalIndex})">책 수정</button>
                         <button onclick="deleteBook(${originalIndex})">삭제</button>
                     </div>
                 `;
                 container.appendChild(div);
             });
+
+            if (window.netlifyIdentity) {
+                applyAdminVisibility(window.netlifyIdentity.currentUser());
+            }
         }
 
         function openBookForm(index) {
@@ -605,7 +620,6 @@
                 books[editIndex].desc = desc;
                 books[editIndex].fullDesc = fullDesc;
             } else {
-                // 책을 생성할 때 생성일(date)을 함께 추가
                 const now = new Date().toISOString();
                 books.push({
                     title: title,
@@ -644,7 +658,6 @@
             const textContainer = document.getElementById('introTextContainer');
             const imgContainer = document.getElementById('introImageContainer');
             
-            // 소개글 줄바꿈(\n)을 <br>로 변환하여 출력
             textContainer.innerHTML = `
                 <p>${(intro.text || "").replace(/\n/g, '<br>')}</p>
                 <br>
@@ -679,14 +692,46 @@
             renderIntro();
         }
 
+        /* Netlify 로그인 상태에 따라 관리자 요소 제어 함수 */
+        function applyAdminVisibility(user) {
+            const elements = document.querySelectorAll('.admin-only');
+            elements.forEach(el => {
+                if (user) {
+                    if (el.classList.contains('flex-display')) {
+                        el.style.display = 'flex';
+                    } else if (el.classList.contains('inline-display')) {
+                        el.style.display = 'inline-block';
+                    } else {
+                        el.style.display = 'block';
+                    }
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        }
+
         // 초기화
         document.addEventListener('DOMContentLoaded', () => {
             showPage('home');
             renderBooks();
             renderIntro();
-        });
 
-        // 비밀번호 재설정 및 토큰 감지 스크립트
+            // Netlify Identity 위젯 초기화 및 이벤트 리스너 등록
+            if (window.netlifyIdentity) {
+                window.netlifyIdentity.on("init", user => {
+                    applyAdminVisibility(user);
+                });
+                window.netlifyIdentity.on("login", user => {
+                    applyAdminVisibility(user);
+                    window.netlifyIdentity.close(); // 로그인 완료 시 창 닫기
+                });
+                window.netlifyIdentity.on("logout", () => {
+                    applyAdminVisibility(null);
+                });
+                applyAdminVisibility(window.netlifyIdentity.currentUser());
+            }
+        });
+        
         if (window.netlifyIdentity) {
             window.netlifyIdentity.on("init", user => {
                 if (window.location.hash.includes("recovery_token") || window.location.hash.includes("invite_token")) {
