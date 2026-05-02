@@ -300,7 +300,7 @@
     </section>
 
     <section id="books" class="page">
-        <h2>저서 목록</h2>
+        <h2>쓰거나 참여한 책</h2>
         
         <div style="margin: 20px 0;">
             <button onclick="openBookForm()">책 추가</button>
@@ -372,35 +372,50 @@
             }
         }
 
+        // 최신순 정렬 (홈 화면 최신 3개)
         function renderHomePosts() {
             const container = document.getElementById('homePosts');
             container.innerHTML = '';
-            // 최신 글 3개만 추출
+            
+            // 생성일 기준 최신순 정렬
+            posts.sort((a, b) => new Date(b.date) - new Date(a.date));
             const latestPosts = posts.slice(0, 3);
             
-            latestPosts.forEach((post, index) => {
+            latestPosts.forEach(post => {
+                const originalIndex = posts.indexOf(post);
                 const card = document.createElement('div');
                 card.className = 'main-post-card';
-                card.onclick = () => openDetailView(index);
+                card.onclick = () => openDetailView(originalIndex);
+
+                const displayDate = post.date.includes('T') ? post.date.split('T')[0] : post.date;
+
                 card.innerHTML = `
                     <div class="post-title">${post.title}</div>
-                    <div class="post-date">${post.date}</div>
+                    <div class="post-date">${displayDate}</div>
                 `;
                 container.appendChild(card);
             });
         }
 
+        // 최신순 정렬 (글 목록)
         function renderWritings() {
             const container = document.getElementById('postListContainer');
             container.innerHTML = '';
             
-            posts.forEach((post, index) => {
+            // 생성일 기준 최신순 정렬
+            posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            posts.forEach(post => {
+                const originalIndex = posts.indexOf(post);
                 const div = document.createElement('div');
                 div.className = 'post-item';
-                div.onclick = () => openDetailView(index);
+                div.onclick = () => openDetailView(originalIndex);
+
+                const displayDate = post.date.includes('T') ? post.date.split('T')[0] : post.date;
+
                 div.innerHTML = `
                     <h3>${post.title}</h3>
-                    <p class="post-date">${post.date}</p>
+                    <p class="post-date">${displayDate}</p>
                 `;
                 container.appendChild(div);
             });
@@ -443,16 +458,19 @@
                 posts[editIndex].content = content;
                 posts[editIndex].image = image;
             } else {
-                const today = new Date().toISOString().split('T')[0];
-                posts.unshift({
+                // 정확한 생성일시(시간 포함)를 저장합니다.
+                const now = new Date().toISOString();
+                posts.push({
                     title: title,
                     content: content,
-                    date: today,
+                    date: now,
                     image: image
                 });
             }
 
+            posts.sort((a, b) => new Date(b.date) - new Date(a.date));
             localStorage.setItem('silver_posts', JSON.stringify(posts));
+            
             closePostForm();
             renderWritings();
             renderHomePosts();
@@ -466,7 +484,9 @@
             
             const post = posts[index];
             document.getElementById('detailTitle').textContent = post.title;
-            document.getElementById('detailDate').textContent = post.date;
+
+            const displayDate = post.date.includes('T') ? post.date.split('T')[0] : post.date;
+            document.getElementById('detailDate').textContent = displayDate;
             
             if (post.image) {
                 document.getElementById('detailImageWrapper').innerHTML = `<img src="${post.image}" alt="게시글 이미지" style="max-width: 100%; max-height: 400px; object-fit: contain;">`;
