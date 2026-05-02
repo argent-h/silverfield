@@ -339,48 +339,22 @@
     </section>
 
     <script>
-        // 기존 저장 데이터 불러오기
+        // 데이터가 없거나 비어있을 때만 빈 배열을 생성하고 덮어쓰지 않습니다.
         let posts = JSON.parse(localStorage.getItem('silver_posts'));
-
-        // 저장된 글이 없으면 예시 데이터를 기본으로 세팅합니다.
-        if (!posts || posts.length === 0) {
-            posts = [
-                {
-                    title: "첫 번째 시 (예시)",
-                    content: "고요한 밤하늘에 별이 빛나듯\n우리의 마음에도 작은 별 하나 띄워봅니다.\n\n바람이 불어와 흔들릴지라도\n그 빛은 꺼지지 않고 우리를 비추어 줍니다.",
-                    date: "2025-02-15T10:00:00Z",
-                    image: ""
-                },
-                {
-                    title: "두 번째 산문 (예시)",
-                    content: "봄이 오는 소리는 언제나 반갑다.\n창문을 열면 느껴지는 쌀쌀한 아침 공기 속에도\n이미 봄의 온기가 숨어 있다.\n\n우리는 매일 조금씩 새로운 계절을 향해 걸어가고 있다.",
-                    date: "2025-02-18T14:30:00Z",
-                    image: ""
-                }
-            ];
+        if (!posts || !Array.isArray(posts)) {
+            posts = [];
             localStorage.setItem('silver_posts', JSON.stringify(posts));
         }
 
         let books = JSON.parse(localStorage.getItem('silver_books'));
-        if (!books || books.length === 0) {
-            books = [
-                {
-                    title: "첫 번째 시집 (2025)",
-                    desc: "일상에서 마주한 고요한 순간들을 담은 시집입니다.",
-                    fullDesc: "이 책은 지난 수년간 써 내려간 시들을 모아 엮은 첫 번째 시집입니다. 일상의 작은 위로가 되기를 바랍니다.",
-                    date: "2025-02-20T10:00:00Z"
-                }
-            ];
+        if (!books || !Array.isArray(books)) {
+            books = [];
             localStorage.setItem('silver_books', JSON.stringify(books));
         }
 
         let intro = JSON.parse(localStorage.getItem('silver_intro'));
         if (!intro) {
-            intro = {
-                text: "안녕하세요, 시와 산문을 사랑하는 사람입니다.\n일상에서 마주하는 고요한 순간들을 적어내려갑니다.",
-                email: "contact@silverfield.com",
-                image: ""
-            };
+            intro = { text: "", email: "", image: "" };
             localStorage.setItem('silver_intro', JSON.stringify(intro));
         }
 
@@ -404,13 +378,11 @@
                 renderIntro();
             }
             
-            // 페이지 전환 시 로그인 상태에 따라 요소 표시
             if (window.netlifyIdentity) {
                 applyAdminVisibility(window.netlifyIdentity.currentUser());
             }
         }
 
-        // 최신순 정렬 (홈 화면 최신 3개)
         function renderHomePosts() {
             const container = document.getElementById('homePosts');
             container.innerHTML = '';
@@ -424,7 +396,7 @@
                 card.className = 'main-post-card';
                 card.onclick = () => openDetailView(originalIndex);
 
-                const displayDate = post.date.includes('T') ? post.date.split('T')[0] : post.date;
+                const displayDate = post.date ? (post.date.includes('T') ? post.date.split('T')[0] : post.date) : '';
 
                 card.innerHTML = `
                     <div class="post-title">${post.title}</div>
@@ -434,7 +406,6 @@
             });
         }
 
-        // 최신순 정렬 (글 목록)
         function renderWritings() {
             const container = document.getElementById('postListContainer');
             container.innerHTML = '';
@@ -447,7 +418,7 @@
                 div.className = 'post-item';
                 div.onclick = () => openDetailView(originalIndex);
 
-                const displayDate = post.date.includes('T') ? post.date.split('T')[0] : post.date;
+                const displayDate = post.date ? (post.date.includes('T') ? post.date.split('T')[0] : post.date) : '';
 
                 div.innerHTML = `
                     <h3>${post.title}</h3>
@@ -520,7 +491,7 @@
             const post = posts[index];
             document.getElementById('detailTitle').textContent = post.title;
 
-            const displayDate = post.date.includes('T') ? post.date.split('T')[0] : post.date;
+            const displayDate = post.date ? (post.date.includes('T') ? post.date.split('T')[0] : post.date) : '';
             document.getElementById('detailDate').textContent = displayDate;
             
             if (post.image) {
@@ -575,7 +546,6 @@
             }
         }
 
-        /* 책 관련 관리 함수 */
         function renderBooks() {
             const container = document.getElementById('bookListContainer');
             container.innerHTML = '';
@@ -677,7 +647,6 @@
             }
         }
 
-        /* 소개글 관련 관리 함수 */
         function renderIntro() {
             const textContainer = document.getElementById('introTextContainer');
             const imgContainer = document.getElementById('introImageContainer');
@@ -716,7 +685,6 @@
             renderIntro();
         }
 
-        /* Netlify 로그인 상태에 따라 관리자 요소 제어 함수 */
         function applyAdminVisibility(user) {
             const elements = document.querySelectorAll('.admin-only');
             elements.forEach(el => {
@@ -734,13 +702,11 @@
             });
         }
 
-        // 초기화
         document.addEventListener('DOMContentLoaded', () => {
             showPage('home');
             renderBooks();
             renderIntro();
 
-            // Netlify Identity 위젯 초기화 및 이벤트 리스너 등록
             if (window.netlifyIdentity) {
                 window.netlifyIdentity.on("init", user => {
                     applyAdminVisibility(user);
