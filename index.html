@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>은빛 들판</title>
+    
+    <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
     <style>
         /* KoPub World 폰트 적용 */
         @import url('//cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/KoPubWorldBatangMedium.woff');
@@ -462,6 +465,15 @@
         document.addEventListener('DOMContentLoaded', () => {
             showPage('home');
         });
+
+        // 2. 🟢 비밀번호 재설정 및 토큰 감지 스크립트 추가
+        if (window.netlifyIdentity) {
+            window.netlifyIdentity.on("init", user => {
+                if (window.location.hash.includes("recovery_token") || window.location.hash.includes("invite_token")) {
+                    window.netlifyIdentity.open('recovery');
+                }
+            });
+        }
     </script>
 
 </body>
