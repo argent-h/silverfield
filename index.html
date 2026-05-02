@@ -236,7 +236,7 @@
                 <input type="text" id="postTitle" placeholder="제목을 입력하세요">
             </div>
             <div class="form-group">
-                <label>내용 (첫 문장은 자동으로 들여쓰기 됩니다)</label>
+                <label>내용 (입력 시 줄바꿈을 적용하면 문단이 나뉩니다)</label>
                 <textarea id="postContent" rows="10" placeholder="내용을 입력하세요"></textarea>
             </div>
             <div class="form-group">
@@ -254,7 +254,7 @@
             <h2 id="detailTitle" style="margin: 20px 0 6px 0;"></h2>
             <p id="detailDate" class="post-date" style="margin-bottom: 20px;"></p>
             <div id="detailImageWrapper" style="margin-bottom: 20px;"></div>
-            <div id="detailContent" class="indent-p" style="font-size: 15px; white-space: pre-wrap;"></div>
+            <div id="detailContent" class="indent-p" style="font-size: 15px;"></div>
             <div style="margin-top: 40px; display: flex; gap: 8px;">
                 <button onclick="editPost()">수정</button>
                 <button onclick="deletePost()">삭제</button>
@@ -333,9 +333,9 @@
     <script>
         // 초기 게시글 데이터
         let posts = JSON.parse(localStorage.getItem('silver_posts')) || [
-            { title: "첫 번째 시", content: "은빛 들판에 바람이 불어오면, 마음속에 묻어두었던 단어들이 깨어납니다. 아주 작은 소리로 속삭이듯 글을 씁니다.", date: "2026-05-01", image: "" },
-            { title: "두 번째 산문", content: "고요한 아침의 풍경을 마주합니다. 일상의 평범한 순간들이 모여 하나의 시가 되는 마법을 믿습니다.", date: "2026-04-25", image: "" },
-            { title: "세 번째 글", content: "이 공간을 통해 여러분과 조용한 사색을 나누고 싶습니다. 시와 산문이 여러분의 쉼터가 되길 바랍니다.", date: "2026-04-10", image: "" }
+            { title: "첫 번째 시", content: "은빛 들판에 바람이 불어오면, 마음속에 묻어두었던 단어들이 깨어납니다.\n아주 작은 소리로 속삭이듯 글을 씁니다.", date: "2026-05-01T21:00:00Z", image: "" },
+            { title: "두 번째 산문", content: "고요한 아침의 풍경을 마주합니다.\n일상의 평범한 순간들이 모여 하나의 시가 되는 마법을 믿습니다.", date: "2026-04-25T14:30:00Z", image: "" },
+            { title: "세 번째 글", content: "이 공간을 통해 여러분과 조용한 사색을 나누고 싶습니다.\n시와 산문이 여러분의 쉼터가 되길 바랍니다.", date: "2026-04-10T11:00:00Z", image: "" }
         ];
 
         // 초기 책 데이터
@@ -346,7 +346,7 @@
 
         // 초기 소개글 데이터
         let intro = JSON.parse(localStorage.getItem('silver_intro')) || {
-            text: "안녕하세요, 시와 산문을 사랑하는 사람입니다. 일상에서 마주하는 고요한 순간들을 적어내려갑니다.",
+            text: "안녕하세요, 시와 산문을 사랑하는 사람입니다.\n일상에서 마주하는 고요한 순간들을 적어내려갑니다.",
             email: "contact@silverfield.com",
             image: ""
         };
@@ -494,7 +494,8 @@
                 document.getElementById('detailImageWrapper').innerHTML = '';
             }
 
-            document.getElementById('detailContent').innerHTML = `<p>${post.content.replace(/\n/g, '</p><p>')}</p>`;
+            // 글 내용의 줄바꿈(\n)을 </p><p> 형태로 변환하여 문단을 나누고 들여쓰기가 적용되게 함
+            document.getElementById('detailContent').innerHTML = `<p>${(post.content || "").replace(/\n/g, '</p><p>')}</p>`;
         }
 
         function closeDetailView() {
@@ -616,8 +617,9 @@
             const textContainer = document.getElementById('introTextContainer');
             const imgContainer = document.getElementById('introImageContainer');
             
+            // 소개글 줄바꿈(\n)을 <br>로 변환하여 출력
             textContainer.innerHTML = `
-                <p>${intro.text}</p>
+                <p>${(intro.text || "").replace(/\n/g, '<br>')}</p>
                 <br>
                 <p><b>E-mail:</b> ${intro.email}</p>
             `;
