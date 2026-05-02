@@ -170,6 +170,7 @@
             align-items: center;
             color: #888888;
             font-size: 12px;
+            text-align: center;
         }
 
         .intro-text {
@@ -266,37 +267,67 @@
     <section id="intro" class="page">
         <h2>소개</h2>
         <div class="intro-container">
-            <div class="intro-image">
+            <div class="intro-image" id="introImageContainer">
                 프로필 사진<br>(이미지 삽입)
             </div>
-            <div class="intro-text">
-                <p>안녕하세요, 시와 산문을 사랑하는 사람입니다. 일상에서 마주하는 고요한 순간들을 적어내려갑니다.</p>
-                <br>
-                <p><b>E-mail:</b> contact@silverfield.com</p>
+            <div class="intro-text" id="introTextContainer">
+                </div>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <button onclick="openIntroForm()">소개글 수정</button>
+        </div>
+
+        <div id="introFormSection" style="display: none; margin-top: 20px; padding: 20px; border: 1px solid #cccccc;">
+            <h3 style="margin-bottom: 15px;">소개글 수정</h3>
+            <div class="form-group">
+                <label>소개 텍스트</label>
+                <textarea id="introText" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label>이메일</label>
+                <input type="text" id="introEmail">
+            </div>
+            <div class="form-group">
+                <label>프로필 이미지 주소 (URL - 선택)</label>
+                <input type="text" id="introImage" placeholder="이미지 주소를 입력하세요">
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="saveIntro()">저장</button>
+                <button onclick="closeIntroForm()">취소</button>
             </div>
         </div>
     </section>
 
     <section id="books" class="page">
         <h2>저서 목록</h2>
-        <div class="book-list">
-            <div class="book-item">
-                <h3>첫 번째 시집 (2025)</h3>
-                <p class="book-desc">여백 사이로 불어오는 바람을 기록한 시집입니다. 일상 속 잊고 지내던 사색의 시간을 담았습니다.</p>
-                <button onclick="toggleBookDesc(this)">소개글 더 보기</button>
-                <div class="full-desc">
-                    은빛 들판에 맺힌 이슬처럼, 투명하고 잔잔한 감정들을 모은 첫 시집입니다. 앤솔러지 참여작 등 다양한 형태의 시 20편이 수록되어 있습니다.
-                </div>
+        
+        <div style="margin: 20px 0;">
+            <button onclick="openBookForm()">책 추가</button>
+        </div>
+
+        <div id="bookFormSection" style="display: none; margin-bottom: 30px; padding: 20px; border: 1px solid #cccccc;">
+            <h3 id="formTitleTextBook" style="margin-bottom: 15px;">책 추가</h3>
+            <input type="hidden" id="editBookIndex">
+            <div class="form-group">
+                <label>책 제목 및 연도</label>
+                <input type="text" id="bookTitle" placeholder="예: 첫 번째 시집 (2025)">
             </div>
-            <div class="book-item">
-                <h3>두 번째 산문집 (2026)</h3>
-                <p class="book-desc">도시의 소음 속에서 발견한 고요함에 대한 단상입니다. 마음의 쉼표가 되는 짧은 글들을 엮었습니다.</p>
-                <button onclick="toggleBookDesc(this)">소개글 더 보기</button>
-                <div class="full-desc">
-                    바쁜 현대인들에게 작은 위로를 건네는 산문집입니다. 50여 편의 산문이 실려 있으며, 흑백 사진이 함께 어우러져 있습니다.
-                </div>
+            <div class="form-group">
+                <label>짧은 소개글</label>
+                <textarea id="bookDesc" rows="3" placeholder="간략한 소개글을 입력하세요"></textarea>
+            </div>
+            <div class="form-group">
+                <label>상세 소개글</label>
+                <textarea id="bookFullDesc" rows="5" placeholder="자세한 소개글을 입력하세요"></textarea>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="saveBook()">저장</button>
+                <button onclick="closeBookForm()">취소</button>
             </div>
         </div>
+
+        <div class="book-list" id="bookListContainer"></div>
     </section>
 
     <script>
@@ -306,6 +337,19 @@
             { title: "두 번째 산문", content: "고요한 아침의 풍경을 마주합니다. 일상의 평범한 순간들이 모여 하나의 시가 되는 마법을 믿습니다.", date: "2026-04-25", image: "" },
             { title: "세 번째 글", content: "이 공간을 통해 여러분과 조용한 사색을 나누고 싶습니다. 시와 산문이 여러분의 쉼터가 되길 바랍니다.", date: "2026-04-10", image: "" }
         ];
+
+        // 초기 책 데이터
+        let books = JSON.parse(localStorage.getItem('silver_books')) || [
+            { title: "첫 번째 시집 (2025)", desc: "여백 사이로 불어오는 바람을 기록한 시집입니다. 일상 속 잊고 지내던 사색의 시간을 담았습니다.", fullDesc: "은빛 들판에 맺힌 이슬처럼, 투명하고 잔잔한 감정들을 모은 첫 시집입니다. 앤솔러지 참여작 등 다양한 형태의 시 20편이 수록되어 있습니다." },
+            { title: "두 번째 산문집 (2026)", desc: "도시의 소음 속에서 발견한 고요함에 대한 단상입니다. 마음의 쉼표가 되는 짧은 글들을 엮었습니다.", fullDesc: "바쁜 현대인들에게 작은 위로를 건네는 산문집입니다. 50여 편의 산문이 실려 있으며, 흑백 사진이 함께 어우러져 있습니다." }
+        ];
+
+        // 초기 소개글 데이터
+        let intro = JSON.parse(localStorage.getItem('silver_intro')) || {
+            text: "안녕하세요, 시와 산문을 사랑하는 사람입니다. 일상에서 마주하는 고요한 순간들을 적어내려갑니다.",
+            email: "contact@silverfield.com",
+            image: ""
+        };
 
         let currentViewPostIndex = null;
 
@@ -319,6 +363,12 @@
             if (pageId === 'writings') {
                 renderWritings();
                 closeDetailView();
+            }
+            if (pageId === 'books') {
+                renderBooks();
+            }
+            if (pageId === 'intro') {
+                renderIntro();
             }
         }
 
@@ -409,6 +459,7 @@
         }
 
         function openDetailView(index) {
+            showPage('writings'); // 글을 클릭하면 자동으로 '글' 페이지로 이동
             currentViewPostIndex = index;
             document.getElementById('detailView').style.display = 'block';
             document.getElementById('postListContainer').style.display = 'none';
@@ -450,6 +501,85 @@
             }
         }
 
+        /* 책 관련 관리 함수 */
+        function renderBooks() {
+            const container = document.getElementById('bookListContainer');
+            container.innerHTML = '';
+            
+            books.forEach((book, index) => {
+                const div = document.createElement('div');
+                div.className = 'book-item';
+                div.innerHTML = `
+                    <h3>${book.title}</h3>
+                    <p class="book-desc">${book.desc}</p>
+                    <button onclick="toggleBookDesc(this)">소개글 더 보기</button>
+                    <div class="full-desc">${book.fullDesc}</div>
+                    <div style="margin-top: 15px; display: flex; gap: 8px;">
+                        <button onclick="openBookForm(${index})">책 수정</button>
+                        <button onclick="deleteBook(${index})">삭제</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function openBookForm(index) {
+            document.getElementById('bookFormSection').style.display = 'block';
+            if (index !== undefined) {
+                document.getElementById('formTitleTextBook').textContent = '책 수정';
+                document.getElementById('editBookIndex').value = index;
+                document.getElementById('bookTitle').value = books[index].title;
+                document.getElementById('bookDesc').value = books[index].desc;
+                document.getElementById('bookFullDesc').value = books[index].fullDesc;
+            } else {
+                document.getElementById('formTitleTextBook').textContent = '책 추가';
+                document.getElementById('editBookIndex').value = '';
+                document.getElementById('bookTitle').value = '';
+                document.getElementById('bookDesc').value = '';
+                document.getElementById('bookFullDesc').value = '';
+            }
+        }
+
+        function closeBookForm() {
+            document.getElementById('bookFormSection').style.display = 'none';
+        }
+
+        function saveBook() {
+            const editIndex = document.getElementById('editBookIndex').value;
+            const title = document.getElementById('bookTitle').value;
+            const desc = document.getElementById('bookDesc').value;
+            const fullDesc = document.getElementById('bookFullDesc').value;
+
+            if (!title || !desc || !fullDesc) {
+                alert('모든 내용을 입력해주세요.');
+                return;
+            }
+
+            if (editIndex !== "") {
+                books[editIndex].title = title;
+                books[editIndex].desc = desc;
+                books[editIndex].fullDesc = fullDesc;
+            } else {
+                books.push({
+                    title: title,
+                    desc: desc,
+                    fullDesc: fullDesc
+                });
+            }
+
+            localStorage.setItem('silver_books', JSON.stringify(books));
+            closeBookForm();
+            renderBooks();
+        }
+
+        function deleteBook(index) {
+            if (confirm('이 책을 목록에서 삭제하시겠습니까?')) {
+                books.splice(index, 1);
+                localStorage.setItem('silver_books', JSON.stringify(books));
+                renderBooks();
+            }
+        }
+
         function toggleBookDesc(btn) {
             const fullDesc = btn.nextElementSibling;
             if (fullDesc.style.display === 'block') {
@@ -461,12 +591,53 @@
             }
         }
 
+        /* 소개글 관련 관리 함수 */
+        function renderIntro() {
+            const textContainer = document.getElementById('introTextContainer');
+            const imgContainer = document.getElementById('introImageContainer');
+            
+            textContainer.innerHTML = `
+                <p>${intro.text}</p>
+                <br>
+                <p><b>E-mail:</b> ${intro.email}</p>
+            `;
+
+            if (intro.image) {
+                imgContainer.innerHTML = `<img src="${intro.image}" alt="프로필 사진" style="width: 100%; height: 100%; object-fit: cover;">`;
+            } else {
+                imgContainer.innerHTML = `프로필 사진<br>(이미지 삽입)`;
+            }
+        }
+
+        function openIntroForm() {
+            document.getElementById('introFormSection').style.display = 'block';
+            document.getElementById('introText').value = intro.text;
+            document.getElementById('introEmail').value = intro.email;
+            document.getElementById('introImage').value = intro.image || '';
+        }
+
+        function closeIntroForm() {
+            document.getElementById('introFormSection').style.display = 'none';
+        }
+
+        function saveIntro() {
+            intro.text = document.getElementById('introText').value;
+            intro.email = document.getElementById('introEmail').value;
+            intro.image = document.getElementById('introImage').value;
+
+            localStorage.setItem('silver_intro', JSON.stringify(intro));
+            closeIntroForm();
+            renderIntro();
+        }
+
         // 초기화
         document.addEventListener('DOMContentLoaded', () => {
             showPage('home');
+            renderBooks();
+            renderIntro();
         });
 
-        // 2. 🟢 비밀번호 재설정 및 토큰 감지 스크립트 추가
+        // 비밀번호 재설정 및 토큰 감지 스크립트
         if (window.netlifyIdentity) {
             window.netlifyIdentity.on("init", user => {
                 if (window.location.hash.includes("recovery_token") || window.location.hash.includes("invite_token")) {
