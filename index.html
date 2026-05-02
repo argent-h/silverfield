@@ -339,18 +339,11 @@
     </section>
 
     <script>
-        // 초기 게시글 데이터
-        let posts = JSON.parse(localStorage.getItem('silver_posts')) || [
-            { title: "첫 번째 시", content: "은빛 들판에 바람이 불어오면, 마음속에 묻어두었던 단어들이 깨어납니다.\n\n아주 작은 소리로 속삭이듯 글을 씁니다.", date: "2026-05-01T21:00:00Z", image: "" },
-            { title: "두 번째 산문", content: "고요한 아침의 풍경을 마주합니다.\n\n일상의 평범한 순간들이 모여 하나의 시가 되는 마법을 믿습니다.", date: "2026-04-25T14:30:00Z", image: "" },
-            { title: "세 번째 글", content: "이 공간을 통해 여러분과 조용한 사색을 나누고 싶습니다.\n\n시와 산문이 여러분의 쉼터가 되길 바랍니다.", date: "2026-04-10T11:00:00Z", image: "" }
-        ];
+        // 초기 게시글 데이터: 저장된 기존 글이 유지되도록 빈 배열로 시작합니다.
+        let posts = JSON.parse(localStorage.getItem('silver_posts')) || [];
 
         // 초기 책 데이터
-        let books = JSON.parse(localStorage.getItem('silver_books')) || [
-            { title: "첫 번째 시집 (2025)", desc: "여백 사이로 불어오는 바람을 기록한 시집입니다. 일상 속 잊고 지내던 사색의 시간을 담았습니다.", fullDesc: "은빛 들판에 맺힌 이슬처럼, 투명하고 잔잔한 감정들을 모은 첫 시집입니다. 앤솔러지 참여작 등 다양한 형태의 시 20편이 수록되어 있습니다.", date: "2025-12-01T12:00:00Z" },
-            { title: "두 번째 산문집 (2026)", desc: "도시의 소음 속에서 발견한 고요함에 대한 단상입니다. 마음의 쉼표가 되는 짧은 글들을 엮었습니다.", fullDesc: "바쁜 현대인들에게 작은 위로를 건네는 산문집입니다. 50여 편의 산문이 실려 있으며, 흑백 사진이 함께 어우러져 있습니다.", date: "2026-03-01T14:30:00Z" }
-        ];
+        let books = JSON.parse(localStorage.getItem('silver_books')) || [];
 
         // 초기 소개글 데이터
         let intro = JSON.parse(localStorage.getItem('silver_intro')) || {
@@ -506,7 +499,6 @@
 
             document.getElementById('detailContent').innerHTML = formatPostContent(post.content);
 
-            // 세부 보기 화면에서도 로그인 여부에 따라 버튼 표시
             if (window.netlifyIdentity) {
                 applyAdminVisibility(window.netlifyIdentity.currentUser());
             }
@@ -723,7 +715,7 @@
                 });
                 window.netlifyIdentity.on("login", user => {
                     applyAdminVisibility(user);
-                    window.netlifyIdentity.close(); // 로그인 완료 시 창 닫기
+                    window.netlifyIdentity.close();
                 });
                 window.netlifyIdentity.on("logout", () => {
                     applyAdminVisibility(null);
@@ -731,7 +723,7 @@
                 applyAdminVisibility(window.netlifyIdentity.currentUser());
             }
         });
-        
+
         if (window.netlifyIdentity) {
             window.netlifyIdentity.on("init", user => {
                 if (window.location.hash.includes("recovery_token") || window.location.hash.includes("invite_token")) {
