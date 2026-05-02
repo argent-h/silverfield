@@ -236,7 +236,7 @@
                 <input type="text" id="postTitle" placeholder="제목을 입력하세요">
             </div>
             <div class="form-group">
-                <label>내용 (입력 시 줄바꿈을 적용하면 문단이 나뉩니다)</label>
+                <label>내용 (줄바꿈을 두 번 하면 문단 사이에 여백이 생깁니다)</label>
                 <textarea id="postContent" rows="10" placeholder="내용을 입력하세요"></textarea>
             </div>
             <div class="form-group">
@@ -333,9 +333,9 @@
     <script>
         // 초기 게시글 데이터
         let posts = JSON.parse(localStorage.getItem('silver_posts')) || [
-            { title: "첫 번째 시", content: "은빛 들판에 바람이 불어오면, 마음속에 묻어두었던 단어들이 깨어납니다.\n아주 작은 소리로 속삭이듯 글을 씁니다.", date: "2026-05-01T21:00:00Z", image: "" },
-            { title: "두 번째 산문", content: "고요한 아침의 풍경을 마주합니다.\n일상의 평범한 순간들이 모여 하나의 시가 되는 마법을 믿습니다.", date: "2026-04-25T14:30:00Z", image: "" },
-            { title: "세 번째 글", content: "이 공간을 통해 여러분과 조용한 사색을 나누고 싶습니다.\n시와 산문이 여러분의 쉼터가 되길 바랍니다.", date: "2026-04-10T11:00:00Z", image: "" }
+            { title: "첫 번째 시", content: "은빛 들판에 바람이 불어오면, 마음속에 묻어두었던 단어들이 깨어납니다.\n\n아주 작은 소리로 속삭이듯 글을 씁니다.", date: "2026-05-01T21:00:00Z", image: "" },
+            { title: "두 번째 산문", content: "고요한 아침의 풍경을 마주합니다.\n\n일상의 평범한 순간들이 모여 하나의 시가 되는 마법을 믿습니다.", date: "2026-04-25T14:30:00Z", image: "" },
+            { title: "세 번째 글", content: "이 공간을 통해 여러분과 조용한 사색을 나누고 싶습니다.\n\n시와 산문이 여러분의 쉼터가 되길 바랍니다.", date: "2026-04-10T11:00:00Z", image: "" }
         ];
 
         // 초기 책 데이터
@@ -494,8 +494,24 @@
                 document.getElementById('detailImageWrapper').innerHTML = '';
             }
 
-            // 글 내용의 줄바꿈(\n)을 </p><p> 형태로 변환하여 문단을 나누고 들여쓰기가 적용되게 함
-            document.getElementById('detailContent').innerHTML = `<p>${(post.content || "").replace(/\n/g, '</p><p>')}</p>`;
+            // 글 내용의 줄바꿈을 문단 및 공백으로 처리
+            document.getElementById('detailContent').innerHTML = formatPostContent(post.content);
+        }
+
+        // 줄바꿈 처리 함수 (줄바꿈 두 번 이상 시 공백 생성)
+        function formatPostContent(content) {
+            const lines = (content || "").replace(/\r\n/g, '\n').split('\n');
+            let html = '';
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (line.trim() === '') {
+                    html += `<div style="height: 1.5em;"></div>`;
+                } else {
+                    html += `<p>${line}</p>`;
+                }
+            }
+            return html;
         }
 
         function closeDetailView() {
