@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>은빛 들판</title>
+    <style>
+        /* KoPub World 폰트 적용 */
+        @import url('//cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/KoPubWorldBatangMedium.woff');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'KoPubWorldBatangMedium', serif;
+            background-color: #ffffff; /* 종이색(백색) */
+            color: #000000;
+            line-height: 1.8;
+            padding: 60px 20px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* 헤더 영역 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 60px;
+            border-bottom: 1px solid #000000;
+            padding-bottom: 20px;
+        }
+
+        h1.title {
+            font-size: 24px;
+            font-weight: normal;
+            letter-spacing: 2px;
+        }
+
+        nav {
+            display: flex;
+            gap: 24px;
+            font-size: 15px;
+        }
+
+        nav a:hover {
+            color: #777777;
+            text-decoration: underline;
+        }
+
+        /* 페이지 관리 */
+        .page {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        /* 메인 페이지 (최신글 3개) */
+        .main-posts-container {
+            margin-top: 40px;
+        }
+
+        .main-post-card {
+            margin-bottom: 40px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 20px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .main-post-card:hover {
+            color: #777777;
+        }
+
+        .post-title {
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+
+        .post-date {
+            font-size: 12px;
+            color: #777777;
+        }
+
+        /* 글 페이지 목록 */
+        .post-list {
+            margin-top: 30px;
+        }
+
+        .post-item {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .post-item:hover {
+            color: #777777;
+        }
+
+        /* 문단 들여쓰기 */
+        .indent-p p {
+            text-indent: 1.5em;
+            margin-bottom: 12px;
+        }
+
+        /* 버튼 및 폼 스타일 */
+        button {
+            background: none;
+            border: 1px solid #000000;
+            padding: 6px 14px;
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #555555;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        /* 소개 페이지 */
+        .intro-container {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            margin-top: 40px;
+        }
+
+        .intro-image {
+            width: 180px;
+            height: 180px;
+            background-color: #f9f9f9;
+            border: 1px solid #eeeeee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #888888;
+            font-size: 12px;
+        }
+
+        .intro-text {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        /* 책 페이지 */
+        .book-list {
+            margin-top: 40px;
+        }
+
+        .book-item {
+            margin-bottom: 40px;
+            border-bottom: 1px solid #eeeeee;
+            padding-bottom: 20px;
+        }
+
+        .book-desc {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #444444;
+        }
+
+        .full-desc {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background-color: #fafafa;
+            border-left: 2px solid #999999;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 class="title"><a href="#" onclick="showPage('home')">은빛 들판</a></h1>
+        <nav>
+            <a href="#" onclick="showPage('home')">홈</a>
+            <a href="#" onclick="showPage('writings')">글</a>
+            <a href="#" onclick="showPage('intro')">소개</a>
+            <a href="#" onclick="showPage('books')">책</a>
+        </nav>
+    </header>
+
+    <section id="home" class="page active">
+        <h2>최신 글</h2>
+        <div class="main-posts-container" id="homePosts"></div>
+    </section>
+
+    <section id="writings" class="page">
+        <h2>글 목록</h2>
+        <div style="margin: 20px 0;">
+            <button onclick="openPostForm()">글쓰기</button>
+        </div>
+
+        <div id="postFormSection" style="display: none; margin-bottom: 30px; padding: 20px; border: 1px solid #cccccc;">
+            <h3 id="formTitleText" style="margin-bottom: 15px;">글 작성</h3>
+            <input type="hidden" id="editIndex">
+            <div class="form-group">
+                <label>제목</label>
+                <input type="text" id="postTitle" placeholder="제목을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label>내용 (첫 문장은 자동으로 들여쓰기 됩니다)</label>
+                <textarea id="postContent" rows="10" placeholder="내용을 입력하세요"></textarea>
+            </div>
+            <div class="form-group">
+                <label>사진 (이미지 URL 입력 - 선택사항)</label>
+                <input type="text" id="postImage" placeholder="이미지 주소(URL)를 입력하세요.">
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="savePost()">저장</button>
+                <button onclick="closePostForm()">취소</button>
+            </div>
+        </div>
+
+        <div id="detailView" style="display: none;">
+            <button onclick="closeDetailView()">목록으로</button>
+            <h2 id="detailTitle" style="margin: 20px 0 6px 0;"></h2>
+            <p id="detailDate" class="post-date" style="margin-bottom: 20px;"></p>
+            <div id="detailImageWrapper" style="margin-bottom: 20px;"></div>
+            <div id="detailContent" class="indent-p" style="font-size: 15px; white-space: pre-wrap;"></div>
+            <div style="margin-top: 40px; display: flex; gap: 8px;">
+                <button onclick="editPost()">수정</button>
+                <button onclick="deletePost()">삭제</button>
+            </div>
+        </div>
+
+        <div id="postListContainer" class="post-list"></div>
+    </section>
+
+    <section id="intro" class="page">
+        <h2>소개</h2>
+        <div class="intro-container">
+            <div class="intro-image">
+                프로필 사진<br>(이미지 삽입)
+            </div>
+            <div class="intro-text">
+                <p>안녕하세요, 시와 산문을 사랑하는 사람입니다. 일상에서 마주하는 고요한 순간들을 적어내려갑니다.</p>
+                <br>
+                <p><b>E-mail:</b> contact@silverfield.com</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="books" class="page">
+        <h2>저서 목록</h2>
+        <div class="book-list">
+            <div class="book-item">
+                <h3>첫 번째 시집 (2025)</h3>
+                <p class="book-desc">여백 사이로 불어오는 바람을 기록한 시집입니다. 일상 속 잊고 지내던 사색의 시간을 담았습니다.</p>
+                <button onclick="toggleBookDesc(this)">소개글 더 보기</button>
+                <div class="full-desc">
+                    은빛 들판에 맺힌 이슬처럼, 투명하고 잔잔한 감정들을 모은 첫 시집입니다. 앤솔러지 참여작 등 다양한 형태의 시 20편이 수록되어 있습니다.
+                </div>
+            </div>
+            <div class="book-item">
+                <h3>두 번째 산문집 (2026)</h3>
+                <p class="book-desc">도시의 소음 속에서 발견한 고요함에 대한 단상입니다. 마음의 쉼표가 되는 짧은 글들을 엮었습니다.</p>
+                <button onclick="toggleBookDesc(this)">소개글 더 보기</button>
+                <div class="full-desc">
+                    바쁜 현대인들에게 작은 위로를 건네는 산문집입니다. 50여 편의 산문이 실려 있으며, 흑백 사진이 함께 어우러져 있습니다.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // 초기 게시글 데이터
+        let posts = JSON.parse(localStorage.getItem('silver_posts')) || [
+            { title: "첫 번째 시", content: "은빛 들판에 바람이 불어오면, 마음속에 묻어두었던 단어들이 깨어납니다. 아주 작은 소리로 속삭이듯 글을 씁니다.", date: "2026-05-01", image: "" },
+            { title: "두 번째 산문", content: "고요한 아침의 풍경을 마주합니다. 일상의 평범한 순간들이 모여 하나의 시가 되는 마법을 믿습니다.", date: "2026-04-25", image: "" },
+            { title: "세 번째 글", content: "이 공간을 통해 여러분과 조용한 사색을 나누고 싶습니다. 시와 산문이 여러분의 쉼터가 되길 바랍니다.", date: "2026-04-10", image: "" }
+        ];
+
+        let currentViewPostIndex = null;
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+
+            if (pageId === 'home') renderHomePosts();
+            if (pageId === 'writings') {
+                renderWritings();
+                closeDetailView();
+            }
+        }
+
+        function renderHomePosts() {
+            const container = document.getElementById('homePosts');
+            container.innerHTML = '';
+            // 최신 글 3개만 추출
+            const latestPosts = posts.slice(0, 3);
+            
+            latestPosts.forEach((post, index) => {
+                const card = document.createElement('div');
+                card.className = 'main-post-card';
+                card.onclick = () => openDetailView(index);
+                card.innerHTML = `
+                    <div class="post-title">${post.title}</div>
+                    <div class="post-date">${post.date}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderWritings() {
+            const container = document.getElementById('postListContainer');
+            container.innerHTML = '';
+            
+            posts.forEach((post, index) => {
+                const div = document.createElement('div');
+                div.className = 'post-item';
+                div.onclick = () => openDetailView(index);
+                div.innerHTML = `
+                    <h3>${post.title}</h3>
+                    <p class="post-date">${post.date}</p>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function openPostForm(index) {
+            document.getElementById('postFormSection').style.display = 'block';
+            if (index !== undefined) {
+                document.getElementById('formTitleText').textContent = '글 수정';
+                document.getElementById('editIndex').value = index;
+                document.getElementById('postTitle').value = posts[index].title;
+                document.getElementById('postContent').value = posts[index].content;
+                document.getElementById('postImage').value = posts[index].image || '';
+            } else {
+                document.getElementById('formTitleText').textContent = '글 작성';
+                document.getElementById('editIndex').value = '';
+                document.getElementById('postTitle').value = '';
+                document.getElementById('postContent').value = '';
+                document.getElementById('postImage').value = '';
+            }
+        }
+
+        function closePostForm() {
+            document.getElementById('postFormSection').style.display = 'none';
+        }
+
+        function savePost() {
+            const editIndex = document.getElementById('editIndex').value;
+            const title = document.getElementById('postTitle').value;
+            const content = document.getElementById('postContent').value;
+            const image = document.getElementById('postImage').value;
+
+            if (!title || !content) {
+                alert('제목과 내용을 모두 입력해주세요.');
+                return;
+            }
+
+            if (editIndex !== "") {
+                posts[editIndex].title = title;
+                posts[editIndex].content = content;
+                posts[editIndex].image = image;
+            } else {
+                const today = new Date().toISOString().split('T')[0];
+                posts.unshift({
+                    title: title,
+                    content: content,
+                    date: today,
+                    image: image
+                });
+            }
+
+            localStorage.setItem('silver_posts', JSON.stringify(posts));
+            closePostForm();
+            renderWritings();
+            renderHomePosts();
+        }
+
+        function openDetailView(index) {
+            currentViewPostIndex = index;
+            document.getElementById('detailView').style.display = 'block';
+            document.getElementById('postListContainer').style.display = 'none';
+            
+            const post = posts[index];
+            document.getElementById('detailTitle').textContent = post.title;
+            document.getElementById('detailDate').textContent = post.date;
+            
+            if (post.image) {
+                document.getElementById('detailImageWrapper').innerHTML = `<img src="${post.image}" alt="게시글 이미지" style="max-width: 100%; max-height: 400px; object-fit: contain;">`;
+            } else {
+                document.getElementById('detailImageWrapper').innerHTML = '';
+            }
+
+            document.getElementById('detailContent').innerHTML = `<p>${post.content.replace(/\n/g, '</p><p>')}</p>`;
+        }
+
+        function closeDetailView() {
+            document.getElementById('detailView').style.display = 'none';
+            document.getElementById('postListContainer').style.display = 'block';
+            currentViewPostIndex = null;
+        }
+
+        function editPost() {
+            if (currentViewPostIndex !== null) {
+                openPostForm(currentViewPostIndex);
+            }
+        }
+
+        function deletePost() {
+            if (currentViewPostIndex !== null) {
+                if (confirm('이 글을 삭제하시겠습니까?')) {
+                    posts.splice(currentViewPostIndex, 1);
+                    localStorage.setItem('silver_posts', JSON.stringify(posts));
+                    closeDetailView();
+                    renderWritings();
+                    renderHomePosts();
+                }
+            }
+        }
+
+        function toggleBookDesc(btn) {
+            const fullDesc = btn.nextElementSibling;
+            if (fullDesc.style.display === 'block') {
+                fullDesc.style.display = 'none';
+                btn.textContent = '소개글 더 보기';
+            } else {
+                fullDesc.style.display = 'block';
+                btn.textContent = '소개글 숨기기';
+            }
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            showPage('home');
+        });
+    </script>
+
+</body>
+</html>
